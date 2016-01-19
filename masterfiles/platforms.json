@@ -1,8 +1,44 @@
 {
-  "Platforms": [
+  "platforms": [
     {
-      "Name": "NES",
-      "Description": "Nintendo NES"
+      "name": "NES",
+      "description": "Nintendo NES"
+    },
+    {
+      "name": "Megadrive",
+      "description": "Sega Megadrive"
+    },
+    {
+      "name": "PS2",
+      "description": "Sony PlayStation 2"
+    },
+    {
+      "name": "PS1",
+      "description": "Sony PlayStation"
+    },
+    {
+      "name": "PSP",
+      "description": "Sony PlayStation Portable (PSP)"
+    },
+    {
+      "name": "Gameboy",
+      "description": "Nintendo Gameboy"
+    },
+    {
+      "name": "GBC",
+      "description": "Nintendo Gameboy Color"
+    },
+    {
+      "name": "GBA",
+      "description": "Nintendo Gameboy Advance"
+    },
+    {
+      "name": "DS",
+      "description": "Nintendo DS"
+    },
+    {
+      "name": "NGPC",
+      "description": "Neo Geo Pocket Color"
     }
   ]
 }
