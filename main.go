@@ -25,7 +25,7 @@ func main() {
   httpPort := fmt.Sprintf(":%d", c.HttpPort)
 
   log.Printf("Waiting for connections on port %s", httpPort)
-  e = http.ListenAndServe(httpPort, nil)
+  //e = http.ListenAndServe(httpPort, nil)
 
   if e!=nil {
     log.Fatal(e)
