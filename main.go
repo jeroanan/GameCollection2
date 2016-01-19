@@ -24,13 +24,12 @@ func main() {
 
   httpPort := fmt.Sprintf(":%d", c.HttpPort)
 
+  log.Printf("Waiting for connections on port %s", httpPort)
   e = http.ListenAndServe(httpPort, nil)
 
   if e!=nil {
     log.Fatal(e)
   }
-  
-  log.Printf("Waiting for connections on port %s", httpPort)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
