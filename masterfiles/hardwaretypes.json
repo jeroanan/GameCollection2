@@ -1,0 +1,8 @@
+{
+  "hardwaretypes": [
+    {
+      "name": "controller",
+      "description": "Game Controller"
+    }
+  ]
+}
