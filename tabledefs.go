@@ -59,3 +59,16 @@ func (ht HardwareType) GetDescription() string {
 func (ht HardwareType) String() string {
   return fmt.Sprintf("%s (%s)", ht.GetName(), ht.GetDescription())
 }
+
+
+type Game struct {
+  Title string
+  Genre string
+  Platform string
+  NumberOwned int
+  NumberBoxed int
+  NumberOfManuals int
+  DatePurchased string
+  ApproximatePurchaseDate bool
+  Notes string
+}

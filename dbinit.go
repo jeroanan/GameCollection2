@@ -12,7 +12,7 @@ func InitializeDatabase(fileName string) {
   db, err := sql.Open("sqlite3", fileName)
 
   if err!=nil {
-    fmt.Println(err)
+    log.Fatal(err)
     return
   }
 
@@ -241,25 +241,4 @@ func insertNameDescriptionTable(insertStmt *sql.Stmt, items []NameDescription, i
       log.Fatal(err)
     }
   }
-}
-
-func getDbTransaction(db *sql.DB) *sql.Tx {
-  tx,err := db.Begin()
-
-  if err!=nil {
-    log.Fatal(err)
-  }
-
-  return tx
-}
-
-func prepareQuery(tx *sql.Tx, query string) *sql.Stmt {
-
-  q, err := tx.Prepare(query)
-
-  if err!=nil {
-    log.Fatal(err)
-  }
-
-  return q
 }

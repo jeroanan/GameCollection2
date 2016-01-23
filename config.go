@@ -9,6 +9,14 @@ import (
 
 type Config struct {
   HttpPort int
+  DatabaseFileLocation string
+}
+
+func (c Config) GetDatabaseFileLocation() string {
+  if c.DatabaseFileLocation == "" {
+    return "./games.db"
+  }
+  return c.DatabaseFileLocation
 }
 
 func ReadConfig() (Config, error) {
