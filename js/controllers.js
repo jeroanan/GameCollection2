@@ -30,3 +30,14 @@ gameCollectionControllers.controller('AddGameController', function($scope, $http
     });
   }
 });
+
+gameCollectionControllers.controller("AllGamesController", function($scope, $http) {
+
+  $http.get('/json/getgames').then(function(data) {
+    $scope.games = data.data.Games;
+  });
+
+  $scope.deleteGame = function(game) {
+    $http.post('/json/deletegame', game);
+  }
+});

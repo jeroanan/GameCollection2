@@ -8,6 +8,9 @@ gameCollection.config(['$routeProvider',
     $routeProvider.
       when('/addgame', {
         templateUrl: '/view/addgame'
+      }).
+      when('/', {
+        templateUrl: '/view/allgames'
       })
     }
   ]);

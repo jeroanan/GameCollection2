@@ -51,8 +51,8 @@ func createHardwareTable(db *sql.DB) {
 
   cols := [...]string{
     "Name TEXT NOT NULL",
-    "HardwareType INTEGER References HardwareType(id)",
-    "Platform TEXT References Platform(id)",
+    "HardwareType INTEGER References HardwareType(rowid)",
+    "Platform TEXT References Platform(rowid)",
     "NumberOwned INTEGER",
     "NumberBoxed INTEGER",
     "Notes TEXT"}
@@ -65,8 +65,8 @@ func createHardwareTable(db *sql.DB) {
 func createGameTable(db *sql.DB) {
   cols := [...]string{
     "Title TEXT NOT NULL",
-    "Genre TEXT References Genre(Name)",
-    "Platform TEXT References Platform(Name)",
+    "Genre TEXT References Genre(rowid)",
+    "Platform TEXT References Platform(rowid)",
     "NumberOwned INTEGER",
     "NumberBoxed INTEGER",
     "NumberOfManuals INTEGER",
@@ -82,7 +82,6 @@ func createGameTable(db *sql.DB) {
 func createTableIfNotExist(db *sql.DB, tableName string, createStatement string) {
 
   if tableExists(tableName, db) {
-    log.Printf("%s table already exists -- no need to recreate", tableName)
     return
   }
 

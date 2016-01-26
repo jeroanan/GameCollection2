@@ -10,6 +10,7 @@ type NameDescription interface {
 }
 
 type NameDescriptionTable struct {
+  RowId int
   Name string
   Description string
 }
@@ -61,7 +62,12 @@ func (ht HardwareType) String() string {
 }
 
 
+type GameList struct {
+  Games []Game
+}
+
 type Game struct {
+  RowId int
   Title string
   Genre string
   Platform string
@@ -71,4 +77,8 @@ type Game struct {
   DatePurchased string
   ApproximatePurchaseDate bool
   Notes string
+}
+
+func (g Game) String() string {
+  return fmt.Sprintf("%s (%s)", g.Title, g.Platform)
 }

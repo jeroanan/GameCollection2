@@ -37,6 +37,20 @@ func getDbConnection() *sql.DB {
   return db
 }
 
+func GetQuery(query string) (*sql.Stmt, func()) {
+  db := getDbConnection()
+  tx := getDbTransaction(db)
+  q := prepareQuery(tx, query)
+
+  f := func() {
+    db.Close()
+    tx.Commit()
+    q.Close()
+  }
+
+  return q, f
+}
+
 func getDatabaseFileLocation() string {
   c, e := ReadConfig()
 

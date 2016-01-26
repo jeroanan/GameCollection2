@@ -21,6 +21,7 @@ func main() {
   }
 
   InitializeDatabase(c.GetDatabaseFileLocation())
+  MigrateMongoToSqlLite()
 
   http.HandleFunc("/", handler)
   http.HandleFunc("/view/", viewHandler)
@@ -49,6 +50,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
   var routes = map[string]string {
     "/view/": "index.html",
     "/view/addgame": "addgame.html",
+    "/view/allgames": "allgames.html",
   }
 
   htmlFilePath, ok := routes[r.URL.Path]
@@ -69,24 +71,29 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 func jsonHandler(w http.ResponseWriter, r *http.Request) {
 
-  requestBody := string(getRequestBody(r))
-  
+  requestBody := getRequestBody(r)
+
+  // First, dispatch calls with a request body
   if len(requestBody)>0 {
-    var dispatchFunc func(string) string
+    var dispatchFunc func([]byte) (string, error)
 
     switch strings.ToLower(r.URL.Path) {
     case "/json/savegame":
       dispatchFunc = SaveGame
+    case "/json/deletegame":
+      dispatchFunc = DeleteGame
     default:
       http.NotFound(w, r)
     }
 
-    fmt.Fprint(w, dispatchFunc(requestBody))
+    responseString, _ := dispatchFunc(requestBody)
+    fmt.Fprint(w, responseString)
     return
   }
 
   var f func() string
 
+  // These things are just requests with no request body
   switch strings.ToLower(r.URL.Path) {
   case "/json/getplatforms":
     f = GetAllPlatforms
@@ -94,6 +101,8 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
     f = GetAllGenres
   case "/json/gethardwaretypes":
     f = GetAllHardwareTypes
+  case "/json/getgames":
+    f = GetAllGames
   default:
     http.NotFound(w, r)
     return

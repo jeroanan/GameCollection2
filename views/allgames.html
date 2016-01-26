@@ -1,0 +1,28 @@
+<div ng-controller="AllGamesController">
+  <table class="table table-striped">
+    <thead>
+      <th>
+        Title
+      </th>
+      <th>
+        Platform
+      </th>
+      <th>
+        Delete
+      </th>
+    </thead>
+    <tbody>
+      <tr ng-repeat="g in games">
+        <td>
+          <span ng-bind="g.Title"></span>
+        </td>
+        <td>
+          <span ng-bind="g.Platform"></span>
+        </td>
+        <td>
+          <button type="button" name="button" class="btn btn-danger" ng-click="deleteGame(g)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
