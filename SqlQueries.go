@@ -114,14 +114,18 @@ func GetAllNameDescriptionRows(queryString string) []NameDescriptionTable {
   return items
 }
 
-func SaveGame(requestBody []byte) (string, error) {
-  var g Game
+func SaveGameFromJson(requestBody []byte) (string, error) {
+  g := Game{}
   err := json.Unmarshal(requestBody, &g)
 
   if err!=nil {
     return "", err
   }
 
+  return SaveGame(g)
+}
+
+func SaveGame(g Game) (string, error) {
   /* At this point I could check to see if an identical game has been saved (e.g. same title/platform) and raise
    * an error if that is the case, but at this point I won't do that. It would be possible to have this situation. For
    * instance there are two different versions of "Tetris" for the NES (by Nintendo and Tengen).
@@ -143,13 +147,20 @@ func SaveGame(requestBody []byte) (string, error) {
   stmt := prepareQuery(tx, insertString)
   defer stmt.Close()
 
-  stmt.Exec(g.Title, g.Genre, g.Platform, g.NumberOwned, g.NumberBoxed, g.NumberOfManuals, g.DatePurchased,
-    g.ApproximatePurchaseDate, g.Notes)
+  approximatePurchaseDate := 0
+  if g.ApproximatePurchaseDate {
+    approximatePurchaseDate = 1
+  }
+
+  _, err := stmt.Exec(g.Title, g.Genre, g.Platform, g.NumberOwned, g.NumberBoxed, g.NumberOfManuals, g.DatePurchased,
+    approximatePurchaseDate, g.Notes)
   return "", err
 }
 
 func GetAllGames() (string) {
   db := getDbConnection()
+  defer db.Close()
+
   queryString := "SELECT g.RowId, g.Title, g.Genre, COALESCE(p.Name, ''), g.NumberOwned, g.NumberBoxed, "
   queryString += "g.NumberOfManuals, g.DatePurchased, g.ApproximatePurchaseDate, g.Notes "
   queryString += "FROM Game g "
@@ -166,7 +177,7 @@ func GetAllGames() (string) {
   }
 
   for rs.Next() {
-    var g Game
+    g := Game{}
 
     err = rs.Scan(&g.RowId, &g.Title, &g.Genre, &g.Platform, &g.NumberOwned, &g.NumberBoxed, &g.NumberOfManuals,
       &g.DatePurchased, &g.ApproximatePurchaseDate, &g.Notes)
@@ -180,6 +191,40 @@ func GetAllGames() (string) {
 
   j, _ := json.Marshal(gameList)
   return string(j)
+}
+
+func GetGamesByNameAndPlatform(g Game) ([]Game, error) {
+  queryString := "SELECT g.RowId, g.Title, g.Genre, COALESCE(p.Name, ''), g.NumberOwned, g.NumberBoxed, "
+  queryString += "g.NumberOfManuals, g.DatePurchased, g.ApproximatePurchaseDate, g.Notes "
+  queryString += "FROM Game g "
+  queryString += "LEFT JOIN Platform p ON g.Platform=p.RowId "
+  queryString += "LEFT JOIN Genre gen on g.Genre=gen.RowId "
+  queryString += "WHERE g.Title = ? AND g.Platform = ?"
+
+  stmt, closerFunc := GetQuery(queryString)
+  defer closerFunc()
+
+  var gs []Game
+
+  rs, err := stmt.Query(g.Title, g.Platform)
+
+  if err!=nil {
+    return gs, err
+  }
+
+  for rs.Next() {
+    g := Game{}
+
+    err = rs.Scan(&g.RowId, &g.Title, &g.Genre, &g.Platform, &g.NumberOwned, &g.NumberBoxed, &g.NumberOfManuals,
+      &g.DatePurchased, &g.ApproximatePurchaseDate, &g.Notes)
+
+    if err!=nil {
+      return gs, err
+    }
+
+    gs = append(gs, g)
+  }
+  return gs, err
 }
 
 func DeleteGame(requestBody []byte) (string, error) {
@@ -287,7 +332,7 @@ func GetHardwareTypeByName(name string) (HardwareType, error) {
   }
 
   for rs.Next() {
-    err = rs.Scan(&ht.Name, ht.Description)
+    err = rs.Scan(&ht.RowId, &ht.Name, &ht.Description)
 
     if err!=nil {
       return ht, err
@@ -295,4 +340,15 @@ func GetHardwareTypeByName(name string) (HardwareType, error) {
   }
 
   return ht, err
+}
+
+func AddHardwareType(ht HardwareType) error {
+  var err error
+
+  queryString := "INSERT INTO HardwareType (Name, Description) VALUES (?, ?)"
+  stmt, closerFunc := GetQuery(queryString)
+  defer closerFunc()
+
+  _, err = stmt.Exec(ht.Name, ht.Description)
+  return err
 }

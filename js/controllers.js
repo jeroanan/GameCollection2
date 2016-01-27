@@ -35,6 +35,7 @@ gameCollectionControllers.controller("AllGamesController", function($scope, $htt
 
   $http.get('/json/getgames').then(function(data) {
     $scope.games = data.data.Games;
+    $scope.numGames = data.data.Games.length;
   });
 
   $scope.deleteGame = function(game) {

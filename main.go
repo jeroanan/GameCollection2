@@ -79,7 +79,7 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 
     switch strings.ToLower(r.URL.Path) {
     case "/json/savegame":
-      dispatchFunc = SaveGame
+      dispatchFunc = SaveGameFromJson
     case "/json/deletegame":
       dispatchFunc = DeleteGame
     default:

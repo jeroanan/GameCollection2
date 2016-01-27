@@ -5,6 +5,7 @@ import (
 )
 
 type NameDescription interface {
+  GetRowId() int
   GetName() string
   GetDescription() string
 }
@@ -17,6 +18,10 @@ type NameDescriptionTable struct {
 
 
 type Platform NameDescriptionTable
+
+func (p Platform) GetRowId() int {
+  return p.RowId
+}
 
 func (p Platform) GetName() string {
   return p.Name
@@ -34,6 +39,10 @@ func (p Platform) String() string {
 
 type Genre NameDescriptionTable
 
+func (g Genre) GetRowId() int {
+  return g.RowId
+}
+
 func (g Genre) GetName() string {
   return g.Name
 }
@@ -46,8 +55,18 @@ func (g Genre) String() string {
   return fmt.Sprintf("%s (%s)", g.GetName(), g.GetDescription())
 }
 
+func (g Genre) FromNameDescription(nd NameDescription) {
+  g.RowId = nd.GetRowId()
+  g.Name = nd.GetName()
+  g.Description = nd.GetDescription()
+}
+
 
 type HardwareType NameDescriptionTable
+
+func (ht HardwareType) GetRowId() int {
+  return ht.RowId
+}
 
 func (ht HardwareType) GetName() string {
   return ht.Name
