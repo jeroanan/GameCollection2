@@ -41,4 +41,7 @@ gameCollectionControllers.controller("AllGamesController", function($scope, $htt
   $scope.deleteGame = function(game) {
     $http.post('/json/deletegame', game);
   }
+
+  $scope.sortField = 'Title';
+  $scope.reverseSort = false;
 });

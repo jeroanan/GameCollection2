@@ -1,21 +1,23 @@
 <div ng-controller="AllGamesController">
   <span ng-bind="numGames"></span> Games.
+  <input type="text" ng-model="filterProp" id="enterFilter" placeholder="Enter filter..." />
+
   <table class="table table-striped">
     <thead>
       <th>
-        Title
+        <a ng-click="sortField='Title'; reverseSort=!reverseSort;">Title</a>
       </th>
       <th>
-        Platform
+        <a ng-click="sortField='Platform'; reverseSort=!reverseSort;">Platform</a>
       </th>
       <th>
         Delete
       </th>
     </thead>
     <tbody>
-      <tr ng-repeat="g in games">
+      <tr ng-repeat="g in games | orderBy:sortField:reverseSort | filter:filterProp">
         <td>
-          <span ng-bind="g.Title"></span>
+          <a ng-href="#/editgame/{{g.RowId}}"><span ng-bind="g.Title"></span></a>
         </td>
         <td>
           <span ng-bind="g.Platform"></span>
