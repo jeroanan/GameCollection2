@@ -21,13 +21,11 @@ func main() {
   }
 
   InitializeDatabase(c.GetDatabaseFileLocation())
-  MigrateMongoToSqlLite()
+  //MigrateMongoToSqlLite()
 
   http.HandleFunc("/", handler)
   http.HandleFunc("/view/", viewHandler)
   http.HandleFunc("/json/", jsonHandler)
-
-
   http.HandleFunc("/js/", jsHandler)
   http.HandleFunc("/css/", cssHandler)
 
@@ -51,6 +49,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
     "/view/": "index.html",
     "/view/addgame": "addgame.html",
     "/view/allgames": "allgames.html",
+    "/view/editgame": "editgame.html",
   }
 
   htmlFilePath, ok := routes[r.URL.Path]
@@ -59,7 +58,8 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
     fileContent, err := ioutil.ReadFile(fmt.Sprintf("views/%s", htmlFilePath))
 
     if err!=nil {
-      log.Fatal(err)
+      log.Print(err)
+      return
     }
 
     fmt.Fprintf(w, "%s", fileContent)
@@ -73,42 +73,49 @@ func jsonHandler(w http.ResponseWriter, r *http.Request) {
 
   requestBody := getRequestBody(r)
 
-  // First, dispatch calls with a request body
-  if len(requestBody)>0 {
-    var dispatchFunc func([]byte) (string, error)
+  urlToLower := strings.ToLower(r.URL.Path)
 
-    switch strings.ToLower(r.URL.Path) {
-    case "/json/savegame":
-      dispatchFunc = SaveGameFromJson
-    case "/json/deletegame":
-      dispatchFunc = DeleteGame
-    default:
-      http.NotFound(w, r)
+  if strings.HasPrefix(urlToLower, "/json/getgame/") {
+    urlSplit := strings.Split(urlToLower, "/")
+    gameId := urlSplit[len(urlSplit)-1]
+    responseString, err := GetGameById(gameId)
+
+    if err!=nil {
+      http.Error(w, fmt.Sprintf("%s", err), 500)
+      return
     }
-
-    responseString, _ := dispatchFunc(requestBody)
-    fmt.Fprint(w, responseString)
+    fmt.Fprintf(w, responseString)
     return
   }
 
-  var f func() string
+  var dispatchFunc func([]byte) (string, error)
 
-  // These things are just requests with no request body
-  switch strings.ToLower(r.URL.Path) {
+  switch urlToLower {
+  case "/json/savegame":
+    dispatchFunc = SaveGameFromJson
+  case "/json/deletegame":
+    dispatchFunc = DeleteGame
   case "/json/getplatforms":
-    f = GetAllPlatforms
+    dispatchFunc = GetAllPlatforms
   case "/json/getgenres":
-    f = GetAllGenres
+    dispatchFunc = GetAllGenres
   case "/json/gethardwaretypes":
-    f = GetAllHardwareTypes
+    dispatchFunc = GetAllHardwareTypes
   case "/json/getgames":
-    f = GetAllGames
+    dispatchFunc = GetAllGames
   default:
     http.NotFound(w, r)
     return
   }
 
-  fmt.Fprint(w, f())
+  responseString, err := dispatchFunc(requestBody)
+
+  if err!=nil {
+    http.Error(w, fmt.Sprintf("%s", err), 500)
+    return
+  }
+
+  fmt.Fprint(w, responseString)
 }
 
 func getRequestBody(r *http.Request) []byte {

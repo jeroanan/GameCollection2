@@ -1,6 +1,7 @@
 var gameCollection = angular.module('gameCollection', [
   'gameCollectionControllers',
-  'ngRoute'
+  'ngRoute',
+  'gameCollectionServices'
 ]);
 
 gameCollection.config(['$routeProvider',
@@ -11,6 +12,9 @@ gameCollection.config(['$routeProvider',
       }).
       when('/', {
         templateUrl: '/view/allgames'
+      }).
+      when('/editgame/:gameid', {
+        templateUrl: '/view/editgame'
       })
     }
   ]);

@@ -6,7 +6,7 @@ import (
   "log"
 )
 
-func GetAllPlatforms() string {
+func GetAllPlatforms(requestBody []byte) (string, error) {
 
   queryString := "SELECT RowId, Name, Description FROM Platform"
 
@@ -26,14 +26,15 @@ func GetAllPlatforms() string {
   j, err := json.Marshal(pmf)
 
   if (err!=nil) {
-    log.Fatal(err)
+    log.Printf("Error while marshalling platform json: %s", err)
+    return "", err
   }
 
-  return fmt.Sprintf("%s", j)
+  return fmt.Sprintf("%s", j), err
 }
 
 
-func GetAllGenres() string {
+func GetAllGenres(requestBody[] byte) (string, error) {
 
   queryString := "SELECT RowId, Name, Description FROM Genre"
 
@@ -53,13 +54,14 @@ func GetAllGenres() string {
   j, err := json.Marshal(gmf)
 
   if err!=nil {
-    log.Fatal(err)
+    log.Print("Error while marshalling genres: %s", err)
+    return "", err
   }
 
-  return fmt.Sprintf("%s", j)
+  return fmt.Sprintf("%s", j), err
 }
 
-func GetAllHardwareTypes() string {
+func GetAllHardwareTypes(requestBody[] byte) (string, error) {
 
   queryString := "SELECT RowId, Name, Description FROM HardwareType"
 
@@ -79,10 +81,11 @@ func GetAllHardwareTypes() string {
   j, err := json.Marshal(htmf)
 
   if err!=nil {
-    log.Fatal(err)
+    log.Printf("Error while marshalling hardware types json: %s", err)
+    return "", err
   }
 
-  return fmt.Sprintf("%s", j)
+  return fmt.Sprintf("%s", j), err
 }
 
 func GetAllNameDescriptionRows(queryString string) []NameDescriptionTable {
@@ -134,18 +137,39 @@ func SaveGame(g Game) (string, error) {
    * is the case.
    */
 
+  j, err := GetGameById(fmt.Sprintf("%d",g.RowId))
+
+  if err!=nil {
+    log.Printf("Error while retrieving game %s during save operation: %s", g, err)
+    return "", err
+  }
+
+  existingGame := Game{}
+  err = json.Unmarshal([]byte(j), &existingGame)
+
+  if err!=nil {
+    log.Printf("Error unmrashaling json %s: %s", j, err)
+    return "", err
+  }
+
+  if existingGame.RowId==g.RowId && g.RowId!=0 {
+    updateGame(g)
+    return "", err
+  }
+
+  return addGame(g)
+}
+
+func addGame(g Game) (string, error) {
+
+  log.Printf("Adding new game %s", g)
+
   insertString := "INSERT INTO Game (Title, Genre, Platform, NumberOwned, NumberBoxed, NumberOfManuals, DatePurchased, "
   insertString += "ApproximatePurchaseDate, Notes) "
   insertString += "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-  db := getDbConnection()
-  defer db.Close()
-
-  tx := getDbTransaction(db)
-  defer tx.Commit()
-
-  stmt := prepareQuery(tx, insertString)
-  defer stmt.Close()
+  stmt, closerFunc := GetQuery(insertString)
+  defer closerFunc()
 
   approximatePurchaseDate := 0
   if g.ApproximatePurchaseDate {
@@ -154,12 +178,42 @@ func SaveGame(g Game) (string, error) {
 
   _, err := stmt.Exec(g.Title, g.Genre, g.Platform, g.NumberOwned, g.NumberBoxed, g.NumberOfManuals, g.DatePurchased,
     approximatePurchaseDate, g.Notes)
+
+  if err!=nil {
+    log.Printf("Error while adding new game %s: %s", g, err)
+  }
+
   return "", err
 }
 
-func GetAllGames() (string) {
-  db := getDbConnection()
-  defer db.Close()
+func updateGame(g Game) (string, error) {
+
+  log.Printf("Updating game %s with row id of %d", g, g.RowId)
+
+  updateString := "UPDATE GAME "
+  updateString += "SET Title=?, Genre=?, Platform=?, NumberOwned=?, NumberBoxed=?, NumberOfManuals=?, DatePurchased=?, "
+  updateString += "ApproximatePurchaseDate=?, Notes=? "
+  updateString += "WHERE RowId=?"
+
+  stmt, closerFunc := GetQuery(updateString)
+  defer closerFunc()
+
+  approximatePurchaseDate := 0
+  if g.ApproximatePurchaseDate {
+    approximatePurchaseDate = 1
+  }
+
+  _, err := stmt.Exec(g.Title, g.Genre, g.Platform, g.NumberOwned, g.NumberBoxed, g.NumberOfManuals, g.DatePurchased,
+    approximatePurchaseDate, g.Notes, g.RowId)
+
+  if err!=nil {
+    log.Printf("Error while updating existing game %s: %s", g, err)
+  }
+
+  return "", err
+}
+
+func GetAllGames(requestBody []byte) (string, error) {
 
   queryString := "SELECT g.RowId, g.Title, g.Genre, COALESCE(p.Name, ''), g.NumberOwned, g.NumberBoxed, "
   queryString += "g.NumberOfManuals, g.DatePurchased, g.ApproximatePurchaseDate, g.Notes "
@@ -170,10 +224,14 @@ func GetAllGames() (string) {
   var gameList GameList
   var err error
 
-  rs, err := db.Query(queryString)
+  stmt, closerFunc := GetQuery(queryString)
+  defer closerFunc()
+
+  rs, err := stmt.Query()
+
   if err!=nil {
-    log.Print(err)
-    return ""
+    log.Printf("Error while running sql query to retrieve games: \n%s\n%s", queryString, err)
+    return "", err
   }
 
   for rs.Next() {
@@ -183,14 +241,20 @@ func GetAllGames() (string) {
       &g.DatePurchased, &g.ApproximatePurchaseDate, &g.Notes)
 
     if (err!=nil) {
-      log.Print(err)
+      log.Printf("Error while scanning games resultset: %s", err)
+      return "", err
     }
 
     gameList.Games = append(gameList.Games, g)
   }
 
-  j, _ := json.Marshal(gameList)
-  return string(j)
+  j, err := json.Marshal(gameList)
+
+  if err!=nil {
+    log.Printf("Error while unmarshalling games json: %s", err)
+  }
+
+  return string(j), err
 }
 
 func GetGamesByNameAndPlatform(g Game) ([]Game, error) {
@@ -225,6 +289,50 @@ func GetGamesByNameAndPlatform(g Game) ([]Game, error) {
     gs = append(gs, g)
   }
   return gs, err
+}
+
+type GameResult struct {
+  Game
+  PlatformId string
+  GenreId string
+}
+
+func GetGameById(gameId string) (string, error) {
+
+  var err error
+
+  queryString := "SELECT g.RowId, g.Title, g.Genre, COALESCE(gen.Name, ''), g.Platform, COALESCE(p.Name, ''), "
+  queryString += "g.NumberOwned, g.NumberBoxed, g.NumberOfManuals, g.DatePurchased, g.ApproximatePurchaseDate, g.Notes "
+  queryString += "FROM Game g "
+  queryString += "LEFT JOIN Platform p ON g.Platform=p.RowId "
+  queryString += "LEFT JOIN Genre gen on g.Genre=gen.RowId "
+  queryString += "WHERE g.RowId=? "
+
+  stmt, closerFunc := GetQuery(queryString)
+  defer closerFunc()
+
+  if err!=nil {
+    return "", err
+  }
+
+  rs, err := stmt.Query(gameId)
+
+  if err!=nil {
+    return "", err
+  }
+
+  g := GameResult{}
+  for rs.Next() {
+    err = rs.Scan(&g.RowId, &g.Title, &g.GenreId, &g.Genre, &g.PlatformId, &g.Platform, &g.NumberOwned,
+      &g.NumberBoxed, &g.NumberOfManuals, &g.DatePurchased, &g.ApproximatePurchaseDate, &g.Notes)
+
+    if err!=nil {
+      return "", err
+    }
+  }
+
+  j, err := json.Marshal(g)
+  return string(j), err
 }
 
 func DeleteGame(requestBody []byte) (string, error) {

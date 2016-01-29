@@ -1,0 +1,105 @@
+<div ng-controller="EditGameController">
+  <h1 ng-bind="game.Title"></h1>
+
+  <div class="row">
+    <div class="col-xs-4"></div>
+    <div class="col-xs-4">
+      <div ng-show="hasError" class="bg-danger">
+        <span ng-bind="errorMessage" class="text-danger"></span>
+      </div>
+    </div>
+    <div class="col-xs-4"></div>
+  </div>
+
+  <form class="row-horizontal">
+    <div class="row">
+      <div class="col-xs-5">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" class="form-control" name="title" ng-model="game.Title">
+        </div>
+      </div>
+      <div class="col-xs-2"></div>
+      <div class="col-xs-5">
+        <div class="form-group">
+          <label for="platform">Platform</label>
+          <select class="form-control" name="platform" id="platform" ng-model="game.PlatformId">
+            <option ng-repeat="p in platforms.Platforms" value="{{p.RowId}}">{{p.Description}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-2">
+        <div class="form-group">
+          <label for="numcopies">Number of copies:</label>
+          <input type="number" id="numcopies" name="numcopies" class="form-control" ng-model="game.NumberOwned" />
+        </div>
+      </div>
+      <div class="col-xs-1"></div>
+      <div class="col-xs-2">
+        <div class="form-group">
+          <label for="numboxed">Number boxed:</label>
+          <input type="number" id="numboxed" name="numboxed" class="form-control" ng-model="game.NumberBoxed" />
+        </div>
+      </div>
+      <div class="col-xs-1"></div>
+      <div class="col-xs-2">
+        <div class="form-group">
+          <label for="nummanuals">Number of manuals:</label>
+          <input type="number" id="nummanuals" name="nummanuals" class="form-control" ng-model="game.NumberOfManuals" />
+        </div>
+      </div>
+      <div class="col-xs-2"></div>
+      <div class="col-xs-2">
+        <div class="form-group">
+         <label for="datepurchased">Date Purchased</label>
+         <input id="datepurchased" name="datepurchased" type="text" class="picker form-control"
+          ng-model="game.DatePurchased" />
+         <div class="checkbox">
+           <label>
+             <input name="approximatepurchaseddate" id="approximatepurchaseddate"
+                    type="checkbox" ng-model="game.ApproximatePurchaseDate" />
+             Approximate date</label>
+         </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-4">
+        <div class="form-group">
+          <label for="genre">Genre</label>
+          <select class="form-control" name="gemre" id="gemre" ng-model="game.GenreId" >
+            <option ng-repeat="g in genres.Genres" value="{{g.RowId}}">{{g.Description}}</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-xs-8"></div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea class="form-control" id="notes" name="notes" rows="5" ng-model="game.Notes"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-1">
+        <div class="form-group">
+          <input type="submit" class="btn btn-primary saveButton" value="Save" ng-click="saveGame()" />
+        </div>
+      </div>
+      <div class="col-xs-1">
+        <div class="form-group">
+          <input type="button" class="btn" value="Cancel" ng-click="cancel()" />
+        </div>
+      </div>
+      <div class="col-xs-10"></div>
+    </div>
+  </form>
+</div>
