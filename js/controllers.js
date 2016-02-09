@@ -97,3 +97,10 @@ gameCollectionControllers.controller("EditGameController", ['$scope', '$http', '
     $scope.hasError = false;
     $scope.errorMessage = '';
 }]);
+
+gameCollectionControllers.directive('errorbox', function() {
+  return {
+    restrict: 'E',    
+    templateUrl: '/directives/error.html'
+  }
+});

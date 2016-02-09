@@ -28,6 +28,7 @@ func main() {
   http.HandleFunc("/json/", jsonHandler)
   http.HandleFunc("/js/", jsHandler)
   http.HandleFunc("/css/", cssHandler)
+  http.HandleFunc("/directives/", directivesHandler)
 
   httpPort := fmt.Sprintf(":%d", c.HttpPort)
 
@@ -59,6 +60,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
     if err!=nil {
       log.Print(err)
+      http.Error(w, "", 500)
       return
     }
 
@@ -140,6 +142,11 @@ func cssHandler(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "text/css")
   rootDir := http.Dir("css/")
+  assetHandler(rootDir, w, r)
+}
+
+func directivesHandler(w http.ResponseWriter, r *http.Request) {
+  rootDir := http.Dir("directives/")
   assetHandler(rootDir, w, r)
 }
 

@@ -35,8 +35,7 @@ func ReadConfig() (Config, error) {
       log.Fatal(errMsg)
     }
 
-    log.Fatal("config.json not found. A default one has been generated. Please updated its values appropriately.")
-
+    log.Fatal("config.json not found. A default one has been generated. Please update its values appropriately.")
   }
 
   e = json.Unmarshal(rawConfigData, &c)

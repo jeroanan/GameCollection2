@@ -2,17 +2,9 @@
 
 <form class="form-horizontal" role="form" id="gameform">
   <div class="container" ng-controller="AddGameController">
-
-    <div class="row">
-      <div class="col-xs-4"></div>
-      <div class="col-xs-4">
-        <div ng-show="hasError" class="bg-danger">
-          <span ng-bind="errorMessage" class="text-danger"></span>
-        </div>
-      </div>
-      <div class="col-xs-4"></div>
-    </div>
     
+    <errorbox></errorbox>
+
     <div class="row">
       <div class="col-xs-5">
         <div class="form-group">

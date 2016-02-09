@@ -153,8 +153,7 @@ func SaveGame(g Game) (string, error) {
   }
 
   if existingGame.RowId==g.RowId && g.RowId!=0 {
-    updateGame(g)
-    return "", err
+    return updateGame(g)
   }
 
   return addGame(g)
@@ -310,11 +309,7 @@ func GetGameById(gameId string) (string, error) {
 
   stmt, closerFunc := GetQuery(queryString)
   defer closerFunc()
-
-  if err!=nil {
-    return "", err
-  }
-
+  
   rs, err := stmt.Query(gameId)
 
   if err!=nil {
